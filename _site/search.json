@@ -60,6 +60,6 @@
     "href": "index.html#how-to-use",
     "title": "My Lab Journal",
     "section": "How to use",
-    "text": "How to use\n\nAccept the assignment and get your own github repo.\nBlog/journal what you are doing in R, by editing the .qmd files.\nSee the links page for lots of helpful links on learning R.\nChange everything to make it your own.\nMake sure to render you website everytime before you want to upload changes"
+    "text": "How to use\n\nAccept the assignment and get your own github repo.\nBlog/journal what you are doing in R, by editing the .qmd files.\nSee the links page for lots of helpful links on learning R.\nChange everything to make it your own.\nMake sure to render you website everytime before you want to upload changes\n\n\nnumbers <- 1:1000\n\n# This will print the first 10 elements of the vector numbers\nnumbers[1:10]\n\n [1]  1  2  3  4  5  6  7  8  9 10\n\n# This will plot a histogram of 100 random elements of the vector numbers\nhist(sample(numbers, 100, replace = T))"
   }
 ]
