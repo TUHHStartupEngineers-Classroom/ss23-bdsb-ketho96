@@ -5,17 +5,7 @@ library(mapdata)
 url <- "https://covid.ourworldindata.org/data/owid-covid-data.csv"
 data <- read_csv(url)  # Import the data from the provided URL
 
-# 
-# data %>% 
-#   mutate(location = case_when(
-#     
-#     location == "United Kingdom" ~ "UK",
-#     location == "United States" ~ "USA",
-#     location == "Democratic Republic of Congo" ~ "Democratic Republic of the Congo",
-#     TRUE ~ location
-#     
-#   )) %>%
-#   distinct()
+
 
 
 # Filter the latest data by location
