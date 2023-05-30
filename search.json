@@ -18,7 +18,7 @@
     "href": "content/01_journal/02_data_acquisition.html",
     "title": "Data Acquisition",
     "section": "",
-    "text": "Note\n\n\n\nYou can delete everything in here and start fresh."
+    "text": "Note\n\n\n\nlibrary(httr) library(jsonlite) library(tibble)\n\n1 API-Anfrage an die DB-Fahrplan API senden\nresponse <- GET(“https://api.deutschebahn.com/timetables/v1/plan/8002549”, add_headers(Accept = “application/json”))\n\n\n2 Überprüfen, ob die API-Anfrage erfolgreich war\nif (http_status(response)$category == “Success”) { # Daten aus der API-Antwort extrahieren data <- content(response, as = “text”) %>% fromJSON(flatten = TRUE)\n# Filtern und Transformieren der relevanten Informationen ice_data <- data\\(plan\\)items\\(ICE  connections <- lapply(ice_data, function(x) {  tibble(train = x\\)name, destination = x\\(to\\)name, departure = x\\(departure\\)datetime, platform = x\\(departure\\)platform) })\n# Zusammenstellen der Tabelle mit den ICE-Verbindungen ice_table <- bind_rows(connections)\n# Ausgabe der Tabelle print(ice_table) } else { # Bei einem Fehler bei der API-Anfrage eine entsprechende Meldung ausgeben print(“Fehler beim Abrufen der Daten.”) }"
   },
   {
     "objectID": "content/01_journal/03_data_wrangling.html",

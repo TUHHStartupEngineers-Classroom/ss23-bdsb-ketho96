@@ -63,6 +63,7 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
 </head>
 
@@ -169,7 +170,18 @@ Note
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>You can delete everything in here and start fresh.</p>
+<p>library(httr) library(jsonlite) library(tibble)</p>
+<section id="api-anfrage-an-die-db-fahrplan-api-senden" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> API-Anfrage an die DB-Fahrplan API senden</h1>
+<p>response &lt;- GET(“https://api.deutschebahn.com/timetables/v1/plan/8002549”, add_headers(Accept = “application/json”))</p>
+</section>
+<section id="überprüfen-ob-die-api-anfrage-erfolgreich-war" class="level1" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> Überprüfen, ob die API-Anfrage erfolgreich war</h1>
+<p>if (http_status(response)$category == “Success”) { # Daten aus der API-Antwort extrahieren data &lt;- content(response, as = “text”) %&gt;% fromJSON(flatten = TRUE)</p>
+<p># Filtern und Transformieren der relevanten Informationen ice_data &lt;- data<span class="math inline">\(plan\)</span>items<span class="math inline">\(ICE  connections &lt;- lapply(ice_data, function(x) {  tibble(train = x\)</span>name, destination = x<span class="math inline">\(to\)</span>name, departure = x<span class="math inline">\(departure\)</span>datetime, platform = x<span class="math inline">\(departure\)</span>platform) })</p>
+<p># Zusammenstellen der Tabelle mit den ICE-Verbindungen ice_table &lt;- bind_rows(connections)</p>
+<p># Ausgabe der Tabelle print(ice_table) } else { # Bei einem Fehler bei der API-Anfrage eine entsprechende Meldung ausgeben print(“Fehler beim Abrufen der Daten.”) }</p>
+</section>
 </div>
 </div>
 
