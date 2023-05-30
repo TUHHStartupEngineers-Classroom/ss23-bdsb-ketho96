@@ -1,40 +1,80 @@
 ---
 title: "Data Acquisition"
-author: "Joschka Schwarz"
+author: "Kevin Thomas"
 ---
+```{r}
+#| eval: false
 
-::: callout-note
+#Task 1
+
+
 library(httr)
 library(jsonlite)
 library(tibble)
 
-# API-Anfrage an die DB-Fahrplan API senden
-response <- GET("https://api.deutschebahn.com/timetables/v1/plan/8002549",
-                add_headers(Accept = "application/json"))
+# API Dokumentation: 
+# https://developers.deutschebahn.com/db-api-marketplace/apis/product/timetables/api/26494#/Timetables_10213/operation/%2Fplan%2F{evaNo}%2F{date}%2F{hour}/get 
+
+Client_ID <- "0d2d10e480ed413839545d86bd9ebe73"
+API_Key <- "73b260c27da328fb225590951c36805e"
+evaNo <- "8000148" # Hamburg Hbf
+date <- "220930" #YYMMDD
+hour <- "10" #10Uhr
+
+
+r <- GET("https://apis.deutschebahn.com/db-api-marketplace/apis/timetables/v1/plan/{evaNo}/{date}/{hour}",add_headers(.headers = c("DB-Client-Id" = Client_ID, "DB-Api-Key" = API_Key)))
+
 
 # Überprüfen, ob die API-Anfrage erfolgreich war
-if (http_status(response)$category == "Success") {
-  # Daten aus der API-Antwort extrahieren
-  data <- content(response, as = "text") %>%
-    fromJSON(flatten = TRUE)
-  
-  # Filtern und Transformieren der relevanten Informationen
-  ice_data <- data$plan$items$ICE
-  connections <- lapply(ice_data, function(x) {
-    tibble(train = x$name,
-           destination = x$to$name,
-           departure = x$departure$datetime,
-           platform = x$departure$platform)
-  })
-  
-  # Zusammenstellen der Tabelle mit den ICE-Verbindungen
-  ice_table <- bind_rows(connections)
-  
-  # Ausgabe der Tabelle
-  print(ice_table)
-} else {
-  # Bei einem Fehler bei der API-Anfrage eine entsprechende Meldung ausgeben
-  print("Fehler beim Abrufen der Daten.")
+
+sprintf("API Status Code: %i", r$status)
+# wirft immer Error 410
+
+
+
+
+
+
+#Task 2
+
+
+
+
+
+
+library(rvest)
+library(tidyverse)
+
+# URL of the category you want to scrape
+category_url <- "https://www.rosebikes.de/fahrr%C3%A4der"
+
+# Function to clean and convert prices to numeric format
+clean_price <- function(price) {
+  price <- gsub("[^0-9,]", "", price)  # Remove any non-numeric characters except comma
+  price <- gsub(",", ".", price)      # Replace comma with dot for decimal places
+  as.numeric(price)
 }
 
-:::
+# Scrape the website and extract the desired information
+page <- read_html(category_url)
+
+# Extract model names
+model_names <- page %>%
+  html_nodes(".product-title") %>%
+  html_text()
+
+# Extract prices
+prices <- page %>%
+  html_nodes(".price") %>%
+  html_text() %>%
+  map_chr(clean_price)
+
+# Create a data frame with the extracted information
+data <- tibble(Model = model_names, Price = prices)
+
+# Print the data frame
+print(data) %>% 
+  head(n=10)
+
+
+```

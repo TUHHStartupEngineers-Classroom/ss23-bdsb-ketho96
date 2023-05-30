@@ -1,8 +1,130 @@
 ---
 title: "Data Wrangling"
-author: "Joschka Schwarz"
+author: "Kevin Thomas"
 ---
+```{r}
+#| eval: false
+library(data.table)
+library(httr)
+library(jsonlite)
+library(vroom)
+library(tidyverse)
 
-::: callout-note
-You can delete everything in here and start fresh.
-:::
+#Get the Data
+
+#patent_DT
+col_types <- list(
+  id = col_character(),
+  date = col_date("%Y-%m-%d"),
+  num_claims = col_double()
+)
+
+patent_DT <- vroom(
+  file       = "patent.tsv", 
+  delim      = "\t", 
+  col_types  = col_types,
+  na         = c("", "NA", "NULL")
+) %>% 
+  setDT()
+#assignee_DT
+col_types <- list(
+  id = col_character(),
+  type = col_character()
+)
+
+assignee_DT <- vroom(
+  file       = "assignee.tsv", 
+  delim      = "\t", 
+  col_types  = col_types,
+  na         = c("", "NA", "NULL")
+) %>% 
+  setDT()
+
+assignee_DT[,.(assignee_id = type)]
+names(assignee_DT)
+
+#patent_assignee_DT
+col_types <- list(
+  patent_id = col_character(),
+  assignee_id = col_character()
+  #location_id = col_character()
+  )
+
+patent_assignee_DT <- vroom(
+  file       = "patent_assignee.tsv", 
+  delim      = "\t", 
+  col_types  = col_types,
+  na         = c("", "NA", "NULL")
+) %>% 
+  setDT()
+#uspc_DT
+col_types <- list(
+patent_id = col_character(),
+mainclass_id = col_character(),
+sequence = col_integer()
+)
+
+uspc_DT <- vroom(
+  file       = "uspc.tsv", 
+  delim      = "\t", 
+  col_types  = col_types,
+  na         = c("", "NA", "NULL")
+) %>% 
+  setDT()
+
+#Challenge 1
+#hierachy_patents_by_company (assignee_id)
+
+hierachy_patents_by_company <- patent_assignee_DT[,.N, by = assignee_id]
+hierachy_patents_by_company <- hierachy_patents_by_company[order(-N)]
+
+assignee_id_top10companies <- hierachy_patents_by_company[1:10]
+
+#doesn't work :S get the names corresponding to the IDs
+merge(assignee_id_top10companies, assignee_DT,by = assignee_id)
+
+
+#2 find top 10 companies in August
+
+# find patent ids in august
+patent_idS_in_August <- patent_DT[,id,by = lubridate::month(date, label = F) == 08]
+#find corresponding assignee ids
+filterd_assignee_ids_August <- patent_assignee_DT[patent_assignee_DT$patent_id %in% patent_idS_in_August,]
+# get the number of patents for each assignee id
+hierachy_patents_by_company_August <- filterd_assignee_ids_August[,.N, by = assignee_id]
+# sort descending
+hierachy_patents_by_company_August <- filterd_assignee_ids_August[order(-N)]
+# provide top 10 companies
+assignee_id_top10companies_in_August <- hierachy_patents_by_company_August[1:10]
+#doesn't work :S
+merge(assignee_id_top10companies, assignee_DT,by = assignee_id)
+
+#3 find top 10 companies in top 10 sectors
+hierachy_patents_by_mainclass_id <- uspc_DT[,.N, by = mainclass_id]
+hierachy_patents_by_mainclass_id <- hierachy_patents_by_mainclass_id[order(-N)]
+
+#provide top 10 classes = sectors
+top10_mainclasses <- hierachy_patents_by_mainclass_id[1:10]
+
+# group patents by mainclass_id
+patents_of_the_mainclass_ids <- uspc_DT[,patent_id, by = mainclass_id]
+
+# keep the patent ids beloning to the top 10 mainclasses
+filterd_patents_top10_mainclasses <- patents_of_the_mainclass_ids[patents_of_the_mainclass_ids$mainclass_id %in% top10_mainclasses,]
+
+# filter all patents by the top10 mainclass patents
+filterd_assignee_ids_top10_mainclasses <- patent_assignee_DT[patent_assignee_DT$patent_id %in% filterd_patents_top10_mainclasses,]
+
+# get the number of patents for each assignee id
+hierachy_patents_by_company_to10_mainclasses <- filterd_assignee_ids_top10_mainclasses[,.N, by = assignee_id]
+
+# sort descending
+hierachy_patents_by_company_top10_mainclasses <- hierachy_patents_by_company_to10_mainclasses[order(-N)]
+
+# provide top 10 companies
+assignee_id_top10companies_in_top10_mainclasses <- hierachy_patents_by_company_to10_mainclasses[1:10]
+
+#doesn't work :S get the names corresponding to the IDs
+merge(assignee_id_top10companies_in_top10_mainclasses, assignee_DT,by = assignee_id)
+
+```
