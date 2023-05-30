@@ -1,26 +1,5 @@
 [
   {
-    "objectID": "content/03_other/06_links.html",
-    "href": "content/03_other/06_links.html",
-    "title": "Links",
-    "section": "",
-    "text": "R is a free open-source programming language that can be used for statistical analysis, data-simulation, graphing, and lots of other stuff. Another free program is R-studio, that provides a nice graphic interface for R. Download R first, then download R-studio. Both can run on PCs, Macs or Linux. Students will be learning R in the stats labs using the lab manual .\n\n\n\n\nGoogle is great, Google your problem\nStackoverflow is great, google will often take you there because someone has already asked your question, and someone else has answered, usually many people have answered your question many ways."
-  },
-  {
-    "objectID": "content/01_journal/03_data_wrangling.html",
-    "href": "content/01_journal/03_data_wrangling.html",
-    "title": "Data Wrangling",
-    "section": "",
-    "text": "Note\n\n\n\nYou can delete everything in here and start fresh."
-  },
-  {
-    "objectID": "content/01_journal/04_data_visualization.html",
-    "href": "content/01_journal/04_data_visualization.html",
-    "title": "Data Visualization",
-    "section": "",
-    "text": "Note\n\n\n\nYou can delete everything in here and start fresh."
-  },
-  {
     "objectID": "content/01_journal/01_tidyverse.html",
     "href": "content/01_journal/01_tidyverse.html",
     "title": "Tidyverse",
@@ -31,15 +10,29 @@
     "objectID": "content/01_journal/01_tidyverse.html#header-2",
     "href": "content/01_journal/01_tidyverse.html#header-2",
     "title": "Tidyverse",
-    "section": "\n2.1 Header 2",
-    "text": "2.1 Header 2\nHeader 3\nHeader 4\nHeader 5\nHeader 6"
+    "section": "2.1 Header 2",
+    "text": "2.1 Header 2\n\nHeader 3\n\nHeader 4\n\nHeader 5\n\nHeader 6"
   },
   {
     "objectID": "content/01_journal/02_data_acquisition.html",
     "href": "content/01_journal/02_data_acquisition.html",
     "title": "Data Acquisition",
     "section": "",
-    "text": "Note\n\n\n\nYou can delete everything in here and start fresh."
+    "text": "#Task 1\n\n\nlibrary(httr)\nlibrary(jsonlite)\nlibrary(tibble)\n\n# API Dokumentation: \n# https://developers.deutschebahn.com/db-api-marketplace/apis/product/timetables/api/26494#/Timetables_10213/operation/%2Fplan%2F{evaNo}%2F{date}%2F{hour}/get \n\nClient_ID <- \"0d2d10e480ed413839545d86bd9ebe73\"\nAPI_Key <- \"73b260c27da328fb225590951c36805e\"\nevaNo <- \"8000148\" # Hamburg Hbf\ndate <- \"220930\" #YYMMDD\nhour <- \"10\" #10Uhr\n\n\nr <- GET(\"https://apis.deutschebahn.com/db-api-marketplace/apis/timetables/v1/plan/{evaNo}/{date}/{hour}\",add_headers(.headers = c(\"DB-Client-Id\" = Client_ID, \"DB-Api-Key\" = API_Key)))\n\n\n# Überprüfen, ob die API-Anfrage erfolgreich war\n\nsprintf(\"API Status Code: %i\", r$status)\n# wirft immer Error 410\n\n\n\n\n\n\n#Task 2\n\n\n\n\n\n\nlibrary(rvest)\nlibrary(tidyverse)\n\n# URL of the category you want to scrape\ncategory_url <- \"https://www.rosebikes.de/fahrr%C3%A4der\"\n\n# Function to clean and convert prices to numeric format\nclean_price <- function(price) {\n  price <- gsub(\"[^0-9,]\", \"\", price)  # Remove any non-numeric characters except comma\n  price <- gsub(\",\", \".\", price)      # Replace comma with dot for decimal places\n  as.numeric(price)\n}\n\n# Scrape the website and extract the desired information\npage <- read_html(category_url)\n\n# Extract model names\nmodel_names <- page %>%\n  html_nodes(\".product-title\") %>%\n  html_text()\n\n# Extract prices\nprices <- page %>%\n  html_nodes(\".price\") %>%\n  html_text() %>%\n  map_chr(clean_price)\n\n# Create a data frame with the extracted information\ndata <- tibble(Model = model_names, Price = prices)\n\n# Print the data frame\nprint(data) %>% \n  head(n=10)"
+  },
+  {
+    "objectID": "content/01_journal/03_data_wrangling.html",
+    "href": "content/01_journal/03_data_wrangling.html",
+    "title": "Data Wrangling",
+    "section": "",
+    "text": "library(data.table)\nlibrary(httr)\nlibrary(jsonlite)\nlibrary(vroom)\nlibrary(tidyverse)\n\n#Get the Data\n\n#patent_DT\ncol_types <- list(\n  id = col_character(),\n  date = col_date(\"%Y-%m-%d\"),\n  num_claims = col_double()\n)\n\npatent_DT <- vroom(\n  file       = \"patent.tsv\", \n  delim      = \"\\t\", \n  col_types  = col_types,\n  na         = c(\"\", \"NA\", \"NULL\")\n) %>% \n  setDT()\n#assignee_DT\ncol_types <- list(\n  id = col_character(),\n  type = col_character()\n)\n\nassignee_DT <- vroom(\n  file       = \"assignee.tsv\", \n  delim      = \"\\t\", \n  col_types  = col_types,\n  na         = c(\"\", \"NA\", \"NULL\")\n) %>% \n  setDT()\n\nassignee_DT[,.(assignee_id = type)]\nnames(assignee_DT)\n\n#patent_assignee_DT\ncol_types <- list(\n  patent_id = col_character(),\n  assignee_id = col_character()\n  #location_id = col_character()\n  )\n\npatent_assignee_DT <- vroom(\n  file       = \"patent_assignee.tsv\", \n  delim      = \"\\t\", \n  col_types  = col_types,\n  na         = c(\"\", \"NA\", \"NULL\")\n) %>% \n  setDT()\n#uspc_DT\ncol_types <- list(\npatent_id = col_character(),\nmainclass_id = col_character(),\nsequence = col_integer()\n)\n\nuspc_DT <- vroom(\n  file       = \"uspc.tsv\", \n  delim      = \"\\t\", \n  col_types  = col_types,\n  na         = c(\"\", \"NA\", \"NULL\")\n) %>% \n  setDT()\n\n#Challenge 1\n#hierachy_patents_by_company (assignee_id)\n\nhierachy_patents_by_company <- patent_assignee_DT[,.N, by = assignee_id]\nhierachy_patents_by_company <- hierachy_patents_by_company[order(-N)]\n\nassignee_id_top10companies <- hierachy_patents_by_company[1:10]\n\n#doesn't work :S get the names corresponding to the IDs\nmerge(assignee_id_top10companies, assignee_DT,by = assignee_id)\n\n\n#2 find top 10 companies in August\n\n# find patent ids in august\npatent_idS_in_August <- patent_DT[,id,by = lubridate::month(date, label = F) == 08]\n#find corresponding assignee ids\nfilterd_assignee_ids_August <- patent_assignee_DT[patent_assignee_DT$patent_id %in% patent_idS_in_August,]\n# get the number of patents for each assignee id\nhierachy_patents_by_company_August <- filterd_assignee_ids_August[,.N, by = assignee_id]\n# sort descending\nhierachy_patents_by_company_August <- filterd_assignee_ids_August[order(-N)]\n# provide top 10 companies\nassignee_id_top10companies_in_August <- hierachy_patents_by_company_August[1:10]\n#doesn't work :S\nmerge(assignee_id_top10companies, assignee_DT,by = assignee_id)\n\n#3 find top 10 companies in top 10 sectors\nhierachy_patents_by_mainclass_id <- uspc_DT[,.N, by = mainclass_id]\nhierachy_patents_by_mainclass_id <- hierachy_patents_by_mainclass_id[order(-N)]\n\n#provide top 10 classes = sectors\ntop10_mainclasses <- hierachy_patents_by_mainclass_id[1:10]\n\n# group patents by mainclass_id\npatents_of_the_mainclass_ids <- uspc_DT[,patent_id, by = mainclass_id]\n\n# keep the patent ids beloning to the top 10 mainclasses\nfilterd_patents_top10_mainclasses <- patents_of_the_mainclass_ids[patents_of_the_mainclass_ids$mainclass_id %in% top10_mainclasses,]\n\n# filter all patents by the top10 mainclass patents\nfilterd_assignee_ids_top10_mainclasses <- patent_assignee_DT[patent_assignee_DT$patent_id %in% filterd_patents_top10_mainclasses,]\n\n# get the number of patents for each assignee id\nhierachy_patents_by_company_to10_mainclasses <- filterd_assignee_ids_top10_mainclasses[,.N, by = assignee_id]\n\n# sort descending\nhierachy_patents_by_company_top10_mainclasses <- hierachy_patents_by_company_to10_mainclasses[order(-N)]\n\n# provide top 10 companies\nassignee_id_top10companies_in_top10_mainclasses <- hierachy_patents_by_company_to10_mainclasses[1:10]\n\n#doesn't work :S get the names corresponding to the IDs\nmerge(assignee_id_top10companies_in_top10_mainclasses, assignee_DT,by = assignee_id)"
+  },
+  {
+    "objectID": "content/01_journal/04_data_visualization.html",
+    "href": "content/01_journal/04_data_visualization.html",
+    "title": "Data Visualization",
+    "section": "",
+    "text": "###Part1\n\nlibrary(tidyverse) \nlibrary(ggplot2)    \n\nurl <- \"https://covid.ourworldindata.org/data/owid-covid-data.csv\"\ndata <- read_csv(url)  # Import the data from the provided URL\n\n\n# Filter data for Germany, UK, France, and Spain\ngermany_uk_france_spain <- data %>%\n  filter(location %in% c(\"Germany\", \"United Kingdom\", \"France\", \"Spain\"))\n\n# Convert date column to Date format\ngermany_uk_france_spain$date <- as.Date(germany_uk_france_spain$date)\n\n# Group data by location and month, and calculate cumulative cases\n\ngermany_uk_france_spain_cumulative <- germany_uk_france_spain %>%\n  group_by(location, month = format(date, \"%Y-%m\")) %>%\n  summarize(cumulative_cases = sum(total_cases, na.rm = TRUE))\n\nggplot(data=germany_uk_france_spain_cumulative, aes(x=month, y=cumulative_cases, group=1, color = location)) +\n  geom_point()+\n  #geom_line() +\n  #geom_smooth()+\n  labs(title = \"COVID-19 confirmed cases in europa as of 25.05.2023\",\n              x = \"Month\",\n              y = \"Cumulative Cases\") +\n  scale_x_discrete(limits = c(\"2019-12\", \"2020-01\", \"2020-02\", \"2020-03\",\n                                     \"2020-04\", \"2020-05\", \"2020-06\", \"2020-07\",\n                                     \"2020-08\", \"2020-09\", \"2020-10\", \"2020-11\",\n                                     \"2020-12\", \"2021-01\", \"2021-02\", \"2021-03\",\n                                     \"2021-04\", \"2021-05\", \"2021-06\", \"2021-07\",\n                                     \"2021-08\", \"2021-09\", \"2021-10\", \"2021-11\",\n                                     \"2021-12\", \"2022-01\", \"2022-02\", \"2022-03\",\n                                     \"2022-04\", \"2022-05\", \"2022-06\", \"2022-07\",\n                                     \"2022-08\", \"2022-09\", \"2022-10\", \"2022-11\",\n                                     \"2022-12\", \"2023-01\", \"2023-02\", \"2023-03\",\n                                     \"2023-04\", \"2023-05\"))+\n  scale_color_manual(values = c(\"Germany\" = \"blue\", \"United Kingdom\" = \"red\",\n                                 \"France\" = \"green\", \"Spain\" = \"purple\"))\n\n\n\n\n##### Part 2\n\n\nlibrary(tidyverse)  \nlibrary(ggplot2)    \nlibrary(mapdata)  \n\nurl <- \"https://covid.ourworldindata.org/data/owid-covid-data.csv\"\ndata <- read_csv(url)  # Import the data from the provided URL\n\n\n\n\n# Filter the latest data by location\ndata <- data %>%\n  group_by(location) %>%\n  filter(date == max(date)) %>%\n  ungroup()\n\n# Calculate the mortality rate\ndata$mortality_rate <- data$total_deaths / data$population\n\n# Merge the map data and the mortality rate data\nmap_data <- map_data(\"world\")\n\n\n\nmerged_data <- merge(map_data, data, by.x = \"region\", by.y = \"location\", all.x = TRUE)\n\n# Plot the mortality rate\nggplot() +\n  geom_map(data = merged_data, map = map_data,\n           aes(x = long, y= lat, map_id = region, fill = mortality_rate),\n           color = \"black\", linewidth = 0.2) +\n  scale_fill_gradient(low = \"lightblue\", high = \"darkblue\", na.value = \"white\",\n                      name = \"Mortality Rate\", labels = scales::percent) +\n  labs(title = \"Distribution of Mortality Rate\",\n       caption = \"Source: Our World in Data\",\n       fill = \"Mortality Rate\") +\n  theme_void()"
   },
   {
     "objectID": "content/02_notes/05_class_notes.html",
@@ -47,6 +40,13 @@
     "title": "Class Notes",
     "section": "",
     "text": "IMPORTANT: You can delete everything in here and start fresh. You might want to start by not deleting anything above this line until you know what that stuff is doing.\nThis is an .qmd file. It is plain text with special features. Any time you write just like this, it will be compiled to normal text in the website. If you put a # in front of your text, it will create a top level-header."
+  },
+  {
+    "objectID": "content/03_other/06_links.html",
+    "href": "content/03_other/06_links.html",
+    "title": "Links",
+    "section": "",
+    "text": "R is a free open-source programming language that can be used for statistical analysis, data-simulation, graphing, and lots of other stuff. Another free program is R-studio, that provides a nice graphic interface for R. Download R first, then download R-studio. Both can run on PCs, Macs or Linux. Students will be learning R in the stats labs using the lab manual .\n\n\n\n\nGoogle is great, Google your problem\nStackoverflow is great, google will often take you there because someone has already asked your question, and someone else has answered, usually many people have answered your question many ways."
   },
   {
     "objectID": "index.html",
@@ -60,6 +60,6 @@
     "href": "index.html#how-to-use",
     "title": "My Lab Journal",
     "section": "How to use",
-    "text": "How to use\n\nAccept the assignment and get your own github repo.\nBlog/journal what you are doing in R, by editing the .qmd files.\nSee the links page for lots of helpful links on learning R.\nChange everything to make it your own.\nMake sure to render you website everytime before you want to upload changes"
+    "text": "How to use\n\nAccept the assignment and get your own github repo.\nBlog/journal what you are doing in R, by editing the .qmd files.\nSee the links page for lots of helpful links on learning R.\nChange everything to make it your own.\nMake sure to render you website everytime before you want to upload changes\n\n\nnumbers <- 1:1000\n\n# This will print the first 10 elements of the vector numbers\nnumbers[1:10]\n\n [1]  1  2  3  4  5  6  7  8  9 10\n\n# This will plot a histogram of 100 random elements of the vector numbers\nhist(sample(numbers, 100, replace = T))"
   }
 ]
